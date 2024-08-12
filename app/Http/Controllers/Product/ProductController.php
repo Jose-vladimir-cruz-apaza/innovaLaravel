@@ -1,41 +1,37 @@
 <?php
 
-namespace App\Http\Controllers\Category;
+namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Category\StoreCategoryRequest;
-use App\Http\Requests\Category\UpdateCategoryRequest;
-use App\Models\Category;
+use App\Http\Requests\Product\StoreProductRecuest;
+use App\Http\Requests\Product\UpdateProductRecuest;
+use App\Http\Resources\Product\ProductCollection;
+use App\Http\Resources\Product\ProductResource;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
-class CategoryController extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $categories = Category::all();
-        
-        return response()->json(
-            [
-                "categories"=>$categories
-            ]                
-        );
+        $products = Product::all();        
+        return new ProductCollection($products);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCategoryRequest $request)
-    {        
+    public function store(StoreProductRecuest $request)
+    {
         $request->validated();         
         $request["slug"]= $this->createSlug($request["name"]);
-        $category = Category::create($request->all());        
-
+        $product = Product::create($request->all());          
         return response()->json([
-            "message" => "Categoria creada con exito",
-            "category" => $category
+            "message" => "Producto creado con exito",
+            "product" => new ProductResource($product),        
         ]);
     }
 
@@ -44,38 +40,36 @@ class CategoryController extends Controller
      */
     public function show(string $term)
     {
-        $category = Category::where("id", $term)
+        $product = Product::where("id", $term)
                 ->orWhere("slug", $term)
                 ->get();
-        if(count($category) == 0){
+        if(count($product) == 0){
             return response()->json([
-                "message"=>"La categoria no se encontro"
+                "message"=>"El producto no se encontro"
             ],404);
         }
-        return response()->json([        
-            "category" => $category[0]
-        ]);
+        return new ProductResource($product[0]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, string $id)
+    public function update(UpdateProductRecuest $request, string $id)
     {
-        $category = Category::find($id);
+        $product = Product::find($id);
         $request->validated();
-        if(!$category){
+        if(!$product){
             return response()->json([
-                "message"=>"La categoria no se encontro"
+                "message"=>"El producto no se encontro"
             ],404);
         }
         if($request["name"]){
             $request["slug"] = $this->createSlug($request["name"]);            
         }
-        $category->update($request->all());
+        $product->update($request->all());
         return response()->json([        
-            "message" => "Categoria actualizada con exito",
-            "category" => $category
+            "message" => "Producto actualizado con exito",
+            "product" => new ProductResource($product),
         ]);
     }
 
@@ -84,15 +78,15 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $category = Category::find($id);
-        if(!$category){
+        $product = Product::find($id);
+        if(!$product){
             return response()->json([
-                "message"=>"La categoria no se encontro"
+                "message"=>"La product no se encontro"
             ],404);
         }
-        $category->delete();
+        $product->delete();
         return response()->json([        
-            "message" => "La categoria ".$category["name"]." Fue eliminada"
+            "message" => "La producto ".$product["name"]." fue eliminado"
         ]);
     }
 

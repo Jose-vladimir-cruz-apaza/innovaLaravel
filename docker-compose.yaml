@@ -3,7 +3,6 @@ services:
   database:
     image: mysql
     container_name: next-inventory
-
     environment:
       MYSQL_DATABASE: "inventory"
       MYSQL_USER: "admin"
